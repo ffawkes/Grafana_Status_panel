@@ -8,6 +8,16 @@ Each value can be used to customize the panel in different ways:
 * Mark if the component is disabled
 * Show extra data in the panel about the component  
 
+---
+
+## --------------  IMPORTANT -------------------------
+
+This is the [original repo](https://github.com/Vonage/Grafana_Status_panel) with one small change:
+
+* New option on panels target settings that turns on **critical if no data**. That means if that panel's target returns no data from the target query that is considered a critical state for that target. In other words adds the critical state to all targets that have empty series or no series with the same alias.
+
+---
+
 ## The General Idea
 Lets say that you want to monitor a bunch of servers, and you want to keep track of multiple stats for each of them, and see in a glance the status of all of them.
 

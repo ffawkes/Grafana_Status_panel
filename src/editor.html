@@ -198,6 +198,12 @@
 				</span>
 				<input type="text" name="url" ng-model="measurement.url" class="gf-form-input" style="width: 300px" ng-change="ctrl.onRender()" />
 			</div>
+
+			<!-- Critical if no Data -->
+			<gf-form-switch class="gf-form"
+							label-class="width-12"
+							label="Critical if no Data" checked="measurement.critNoData"
+							on-change="ctrl.onRender()"></gf-form-switch>
 		</div>
 
 		<div class="section gf-form-group">

@@ -323,16 +323,25 @@ System.register(["app/plugins/sdk", "lodash", "app/core/time_series2", "app/core
 						this.annotation = [];
 						this.extraMoreAlerts = null;
 
-						_.each(this.series, function (s) {
-							if (s.datapoints.length === 0) {
-								return;
-							}
+						var processedTargets = [];
 
+						var processSeries = function processSeries(s) {
 							var target = _.find(targets, function (target) {
 								return target.alias == s.alias || target.target == s.alias;
 							});
 
 							if (!target) {
+								return;
+							}
+
+							processedTargets.push(target);
+
+							if (s.datapoints.length === 0) {
+								if (!target.critNoData) return;
+								s.display_value = "No Data";
+								s.displayType = _this5.displayTypes[0];
+								s.isDisplayValue = true;
+								_this5.crit.push(s);
 								return;
 							}
 
@@ -390,6 +399,20 @@ System.register(["app/plugins/sdk", "lodash", "app/core/time_series2", "app/core
 							} else if (target.valueHandler == "Text Only") {
 								_this5.handleTextOnly(s, target);
 							}
+						};
+
+						// process all series
+						_.each(this.series, processSeries);
+
+						// process targets with no related series - only for crit on no data
+						targets.filter(function (target) {
+							return processedTargets.indexOf(target) === -1;
+						}).forEach(function (target) {
+							var dummySeries = new TimeSeries({
+								datapoints: [],
+								alias: target.alias || target.target
+							});
+							processSeries(dummySeries);
 						});
 
 						if (this.panel.isHideAlertsOnDisable && this.disabled.length > 0) {

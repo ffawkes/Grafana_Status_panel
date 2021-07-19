@@ -239,16 +239,25 @@ export class StatusPluginCtrl extends MetricsPanelCtrl {
 		this.annotation = [];
 		this.extraMoreAlerts = null;
 
-		_.each(this.series, (s) => {
-			if (s.datapoints.length === 0) {
-				return;
-			}
+		const processedTargets = [];
 
+		const processSeries = (s) => {
 			let target = _.find(targets, (target) => {
 				return target.alias == s.alias || target.target == s.alias;
 			});
 
 			if (!target) {
+				return;
+			}
+
+			processedTargets.push(target);
+
+			if (s.datapoints.length === 0) {
+				if(!target.critNoData) return;
+				s.display_value = "No Data";
+				s.displayType = this.displayTypes[0];
+				s.isDisplayValue = true;
+				this.crit.push(s);
 				return;
 			}
 
@@ -304,6 +313,18 @@ export class StatusPluginCtrl extends MetricsPanelCtrl {
 			else if (target.valueHandler == "Text Only") {
 				this.handleTextOnly(s, target);
 			}
+		}
+
+		// process all series
+		_.each(this.series, processSeries);
+
+		// process targets with no related series - only for crit on no data
+		targets.filter(target => processedTargets.indexOf(target) === -1).forEach(target => {
+			const dummySeries = new TimeSeries({
+				datapoints: [],
+				alias: target.alias || target.target
+			});
+			processSeries(dummySeries);
 		});
 
 		if(this.panel.isHideAlertsOnDisable && this.disabled.length > 0) {
